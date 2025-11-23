@@ -4,9 +4,9 @@ namespace AcademicSystem.ApplicationCore.Entities;
 
 public class Student : BaseEntity
 {
-    public string UserId { get; private set; }
-    public string RegistrationNumber { get; set; }
-    public Address Address { get; private set; }
+    public string UserId { get; private set; } = null!;
+    public string RegistrationNumber { get; set; } = null!;
+    public Address Address { get; private set; } = null!;
 
     protected Student() { }
 

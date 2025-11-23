@@ -4,8 +4,8 @@ namespace AcademicSystem.ApplicationCore.Entities;
 
 public class Teacher : BaseEntity
 {
-    public string UserId { get; private set; }
-    public Address Address { get; private set; }
+    public string UserId { get; private set; } = null!;
+    public Address Address { get; private set; } = null!;
 
     protected Teacher() { }
 

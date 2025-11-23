@@ -2,7 +2,7 @@
 
 public class Administrator : BaseEntity
 {
-    public string UserId { get; private set; }
+    public string UserId { get; private set; } = null!;
 
     protected Administrator() { }
 
