@@ -1,4 +1,5 @@
 ﻿using AcademicSystem.ApplicationCore.Exceptions;
+using AcademicSystem.ApplicationCore.Constants;
 
 namespace AcademicSystem.ApplicationCore.Entities;
 
@@ -20,6 +21,11 @@ public class Student : BaseEntity
         if (string.IsNullOrWhiteSpace(registrationNumber))
         {
             throw new DomainException("Registration Number is required");
+        }
+
+        if (registrationNumber.Length > StudentConstraints.MaxRegistrationNumberLength)
+        {
+            throw new DomainException("Registration Number cannot exceed 10 characters");
         }
 
         this.UserId = userId;
