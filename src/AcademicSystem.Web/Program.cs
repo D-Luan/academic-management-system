@@ -1,9 +1,14 @@
+using AcademicSystem.ApplicationCore.Interfaces;
+using AcademicSystem.ApplicationCore.Services;
 using AcademicSystem.Infrastructure.Data;
+using AcademicSystem.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+builder.Services.AddScoped<IStudentService, StudentService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
