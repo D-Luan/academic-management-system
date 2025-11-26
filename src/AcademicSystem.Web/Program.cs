@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Serilog;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +18,7 @@ builder.Host.UseSerilog((context, configuration) =>
         .ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 builder.Services.AddScoped<IStudentService, StudentService>();
@@ -43,8 +43,8 @@ app.UseMiddleware<AcademicSystem.Web.Middlewares.ErrorHandlerMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
