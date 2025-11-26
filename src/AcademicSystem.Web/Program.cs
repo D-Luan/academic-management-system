@@ -7,8 +7,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, configuration) =>
+    configuration
+        .WriteTo.Console()
+        .ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -30,6 +36,8 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<AcademicDbContext>();
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 app.UseMiddleware<AcademicSystem.Web.Middlewares.ErrorHandlerMiddleware>();
 
