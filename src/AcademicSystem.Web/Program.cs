@@ -31,6 +31,8 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
 
 var app = builder.Build();
 
+app.UseMiddleware<AcademicSystem.Web.Middlewares.ErrorHandlerMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
