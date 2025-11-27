@@ -29,8 +29,21 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-builder.Services.AddDbContext<AcademicDbContext>(options =>
-    options.UseNpgsql(connectionString));
+if (connectionString == "InMemory")
+{
+    builder.Services.AddDbContext<AcademicDbContext>(options =>
+        options.UseInMemoryDatabase("AcademicDbForTesting"));
+}
+else
+{
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    }
+
+    builder.Services.AddDbContext<AcademicDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
 
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<AcademicDbContext>();
@@ -57,3 +70,5 @@ app.MapIdentityApi<ApplicationUser>();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
