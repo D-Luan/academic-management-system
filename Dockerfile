@@ -2,7 +2,8 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 
 COPY . ./
-RUN dotnet restore
+
+RUN dotnet restore src/AcademicSystem.Web/AcademicSystem.Web.csproj
 
 RUN dotnet publish src/AcademicSystem.Web/AcademicSystem.Web.csproj -c Release -o /app/out
 
