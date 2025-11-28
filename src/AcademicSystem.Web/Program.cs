@@ -88,20 +88,10 @@ app.UseSerilogRequestLogging();
 
 app.UseMiddleware<AcademicSystem.Web.Middlewares.ErrorHandlerMiddleware>();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference(options =>
-    {
-        options.Servers = new[]
-        {
-            new ScalarServer("https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net")
-        };
-    });
-}
+app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.UseCors("AllowAll");
-
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -122,7 +112,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Erro ao migrar o banco de dados.");
+        logger.LogError(ex, "CRITICAL: Failed to apply migrations to the database.");
     }
 }
 
