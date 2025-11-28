@@ -111,6 +111,21 @@ app.MapIdentityApi<ApplicationUser>();
 
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AcademicDbContext>();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Erro ao migrar o banco de dados.");
+    }
+}
+
 app.Run();
 
 public partial class Program { }
