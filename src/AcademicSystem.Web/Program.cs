@@ -10,6 +10,7 @@ using FluentValidation.AspNetCore;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,7 @@ builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
-        document.Servers = new List<Microsoft.OpenApi.Models.OpenApiServer>
+        document.Servers = new List<OpenApiServer>
         {
             new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
         };
