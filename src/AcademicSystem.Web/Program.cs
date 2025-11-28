@@ -19,7 +19,17 @@ builder.Host.UseSerilog((context, configuration) =>
         .ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Servers = new List<Microsoft.OpenApi.Models.OpenApiServer>
+        {
+            new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
+        };
+        return Task.CompletedTask;
+    });
+});
 
 builder.Services.AddCors(options =>
 {
@@ -59,10 +69,14 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
 
 var app = builder.Build();
 
-app.UseForwardedHeaders(new ForwardedHeadersOptions
+var forwardedHeaderOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
+};
+forwardedHeaderOptions.KnownNetworks.Clear();
+forwardedHeaderOptions.KnownProxies.Clear();
+
+app.UseForwardedHeaders(forwardedHeaderOptions);
 
 app.UseSerilogRequestLogging();
 
