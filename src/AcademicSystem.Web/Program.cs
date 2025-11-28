@@ -70,13 +70,18 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
 
 var app = builder.Build();
 
+app.Use((context, next) =>
+{
+    context.Request.Scheme = "https";
+    return next();
+});
+
 var forwardedHeaderOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 };
 forwardedHeaderOptions.KnownNetworks.Clear();
 forwardedHeaderOptions.KnownProxies.Clear();
-
 app.UseForwardedHeaders(forwardedHeaderOptions);
 
 app.UseSerilogRequestLogging();
