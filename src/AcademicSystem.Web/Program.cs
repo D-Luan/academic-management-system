@@ -113,6 +113,7 @@ using (var scope = app.Services.CreateScope())
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "CRITICAL: Failed to apply migrations to the database.");
+        throw;
     }
 }
 
