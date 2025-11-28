@@ -107,7 +107,11 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AcademicDbContext>();
-        context.Database.Migrate();
+        
+        if (context.Database.IsRelational())
+        {
+            context.Database.Migrate();
+        }
     }
     catch (Exception ex)
     {
