@@ -85,7 +85,13 @@ app.UseMiddleware<AcademicSystem.Web.Middlewares.ErrorHandlerMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+    {
+        options.Servers = new[]
+        {
+            new ScalarServer("https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net")
+        };
+    });
 }
 
 app.UseCors("AllowAll");
