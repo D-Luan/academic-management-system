@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using AcademicSystem.ApplicationCore.Interfaces;
 using AcademicSystem.ApplicationCore.Enums;
 using AcademicSystem.Web.DTOs;
+using Microsoft.AspNetCore.Identity;
 
 namespace AcademicSystem.Web.Controllers;
 
 [ApiController]
 [Route("api/courses")]
-[Authorize]
+[Authorize(AuthenticationSchemes = "Identity.Bearer")]
 public class CourseController : ControllerBase
 {
     private readonly ICourseService _courseService;
