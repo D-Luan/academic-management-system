@@ -11,8 +11,12 @@ using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/home/ASP.NET/DataProtection-keys"));
 
 builder.Host.UseSerilog((context, configuration) =>
     configuration
