@@ -16,9 +16,7 @@ using Microsoft.AspNetCore.DataProtection;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, configuration) =>
-    configuration
-        .WriteTo.Console()
-        .ReadFrom.Configuration(context.Configuration));
+    configuration.WriteTo.Console().ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers();
 
@@ -62,20 +60,18 @@ builder.Services.AddOpenApi(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
-        policy => policy.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
+        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddScoped<ICourseService, CourseService> ();
+builder.Services.AddScoped<ICourseService, CourseService>();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        ?? throw new InvalidOperationException("Connection string not found.");
 
 if (connectionString == "InMemory")
 {
@@ -84,11 +80,6 @@ if (connectionString == "InMemory")
 }
 else
 {
-    if (string.IsNullOrEmpty(connectionString))
-    {
-        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-    }
-
     builder.Services.AddDbContext<AcademicDbContext>(options =>
         options.UseNpgsql(connectionString));
 }
@@ -108,16 +99,15 @@ app.Use((context, next) =>
     return next();
 });
 
-var forwardedHeaderOptions = new ForwardedHeadersOptions
+var forwardedOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 };
-forwardedHeaderOptions.KnownNetworks.Clear();
-forwardedHeaderOptions.KnownProxies.Clear();
-app.UseForwardedHeaders(forwardedHeaderOptions);
+forwardedOptions.KnownNetworks.Clear();
+forwardedOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedOptions);
 
 app.UseSerilogRequestLogging();
-
 app.UseMiddleware<AcademicSystem.Web.Middlewares.ErrorHandlerMiddleware>();
 
 app.MapOpenApi();
@@ -130,7 +120,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapIdentityApi<ApplicationUser>();
-
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
@@ -139,7 +128,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AcademicDbContext>();
-        
         if (context.Database.IsRelational())
         {
             context.Database.Migrate();
@@ -148,7 +136,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "CRITICAL: Failed to apply migrations to the database.");
+        logger.LogError(ex, "CRITICAL: Failed to apply migrations.");
         throw;
     }
 }
