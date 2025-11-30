@@ -15,15 +15,13 @@ using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDataProtection()
-    .PersistKeysToDbContext<AcademicDbContext>();
-
 builder.Host.UseSerilog((context, configuration) =>
     configuration
         .WriteTo.Console()
         .ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers();
+
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((document, context, cancellationToken) =>
@@ -94,6 +92,10 @@ else
     builder.Services.AddDbContext<AcademicDbContext>(options =>
         options.UseNpgsql(connectionString));
 }
+
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<AcademicDbContext>()
+    .SetApplicationName("AcademicSystem");
 
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<AcademicDbContext>();
