@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using Serilog;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,6 +92,24 @@ builder.Services.AddDataProtection()
 
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<AcademicDbContext>();
+
+builder.Services.Configure<JwtBearerOptions>("Identity.Bearer", options =>
+{
+    options.IncludeErrorDetails = true;
+
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+
+        ValidateIssuer = false,
+
+        ValidateAudience = false,
+
+        ValidateLifetime = true,
+
+        ClockSkew = TimeSpan.Zero
+    };
+});
 
 var app = builder.Build();
 
