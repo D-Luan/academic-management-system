@@ -22,14 +22,17 @@ builder.Host.UseSerilog((context, configuration) =>
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
 {
-    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    if (builder.Environment.IsProduction())
     {
-        document.Servers = new List<OpenApiServer>
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            document.Servers = new List<OpenApiServer>
         {
             new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
         };
-        return Task.CompletedTask;
-    });
+            return Task.CompletedTask;
+        });
+    }
 });
 
 builder.Services.AddCors(options =>
