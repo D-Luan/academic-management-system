@@ -12,6 +12,7 @@ using Scalar.AspNetCore;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,6 +97,12 @@ else
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<AcademicDbContext>()
     .SetApplicationName("AcademicSystem");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+});
 
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<AcademicDbContext>();
