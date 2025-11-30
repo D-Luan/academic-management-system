@@ -1,7 +1,6 @@
 ﻿using AcademicSystem.ApplicationCore.Enums;
 using AcademicSystem.ApplicationCore.Interfaces;
 using AcademicSystem.Web.DTOs;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
