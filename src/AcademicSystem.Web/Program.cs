@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.DataProtection;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo("/home/site/wwwroot/DataProtection-Keys"));
+    .PersistKeysToDbContext<AcademicDbContext>();
 
 builder.Host.UseSerilog((context, configuration) =>
     configuration
