@@ -35,4 +35,16 @@ public class CourseTests
         Assert.Equal("Computer Science", course.Name);
         Assert.Equal(CourseType.Bachelor, course.Type);
     }
+
+    [Fact]
+    public void Should_AddSubject_When_Valid()
+    {
+        var course = new Course("Computer Science", CourseType.Bachelor, 3600);
+        var subject = new Subject("Software Engineer", 1, 60);
+
+        course.AddSubject(subject);
+
+        Assert.Single(course.Subjects);
+        Assert.Contains(subject, course.Subjects);
+    }
 }

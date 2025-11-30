@@ -9,6 +9,10 @@ public class Course : BaseEntity
     public CourseType Type { get; private set; }
     public int TotalHours { get; private set; }
 
+    private readonly List<Subject> _subjects = new();
+
+    public IReadOnlyCollection<Subject> Subjects => _subjects.AsReadOnly();
+
     protected Course() { }
 
     public Course(string name, CourseType type, int totalHours)
@@ -26,5 +30,10 @@ public class Course : BaseEntity
         this.Name = name;
         this.Type = type;
         this.TotalHours = totalHours;
+    }
+
+    public void AddSubject(Subject subject)
+    {
+        _subjects.Add(subject);
     }
 }
