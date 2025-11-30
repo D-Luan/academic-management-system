@@ -9,7 +9,7 @@ namespace AcademicSystem.Web.Controllers;
 
 [ApiController]
 [Route("api/courses")]
-[Authorize(AuthenticationSchemes = "Identity.Bearer")]
+//[Authorize(AuthenticationSchemes = "Identity.Bearer")]
 public class CourseController : ControllerBase
 {
     private readonly ICourseService _courseService;

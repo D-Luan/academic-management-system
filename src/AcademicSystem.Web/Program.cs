@@ -3,15 +3,16 @@ using AcademicSystem.ApplicationCore.Interfaces;
 using AcademicSystem.ApplicationCore.Services;
 using AcademicSystem.Infrastructure.Data;
 using AcademicSystem.Infrastructure.Data.Repositories;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Serilog;
-using Scalar.AspNetCore;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
