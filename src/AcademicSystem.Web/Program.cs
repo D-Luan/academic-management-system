@@ -26,17 +26,39 @@ builder.Host.UseSerilog((context, configuration) =>
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
 {
-    if (builder.Environment.IsProduction())
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
-        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        if (builder.Environment.IsProduction())
         {
             document.Servers = new List<OpenApiServer>
+            {
+                new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
+            };
+        }
+
+        var securityScheme = new OpenApiSecurityScheme
         {
-            new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Paste your JWT token here."
         };
-            return Task.CompletedTask;
-        });
-    }
+
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
+        {
+            ["Bearer"] = securityScheme
+        };
+
+        document.SecurityRequirements = new List<OpenApiSecurityRequirement>
+        {
+            new() { [securityScheme] = new List<string>() }
+        };
+
+        return Task.CompletedTask;
+    });
 });
 
 builder.Services.AddCors(options =>
