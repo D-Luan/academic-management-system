@@ -18,6 +18,7 @@ public class AcademicDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Administrator> Administrators { get; set; }
     public DbSet<Course> Courses { get; set; }
     public DbSet<Subject> Subjects { get; set; }
+    public DbSet<Enrollment> Enrollments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

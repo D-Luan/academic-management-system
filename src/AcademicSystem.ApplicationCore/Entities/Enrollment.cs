@@ -12,6 +12,9 @@ public class Enrollment : BaseEntity
     public int Semester { get; private set; }
     public EnrollmentStatus Status { get; private set; }
 
+    public virtual Student Student { get; private set; } = null!;
+    public virtual Course Course { get; private set; } = null!;
+
     protected Enrollment() {}
 
     public Enrollment(int studentId, int courseId)
