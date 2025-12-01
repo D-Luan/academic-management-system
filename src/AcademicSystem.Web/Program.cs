@@ -64,9 +64,6 @@ else
         options.UseNpgsql(connectionString));
 }
 
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var keyBytes = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
-
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -74,6 +71,9 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    var jwtSettings = builder.Configuration.GetSection("Jwt");
+    var keyBytes = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
@@ -125,11 +125,15 @@ app.UseAuthorization();
 app.MapPost("/api/login", async (
     [Microsoft.AspNetCore.Mvc.FromBody] AcademicSystem.Web.DTOs.LoginRequest request,
     UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager) =>
+    SignInManager<ApplicationUser> signInManager,
+    IConfiguration configuration) =>
 {
     var user = await userManager.FindByEmailAsync(request.Email);
     if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
         return Results.Unauthorized();
+
+    var jwtSettings = builder.Configuration.GetSection("Jwt");
+    var keyBytes = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
 
     var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
     var tokenDescriptor = new SecurityTokenDescriptor
