@@ -21,22 +21,6 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.WriteTo.Console().ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers();
-
-builder.Services.AddOpenApi(options =>
-{
-    if (builder.Environment.IsProduction())
-    {
-        options.AddDocumentTransformer((document, context, cancellationToken) =>
-        {
-            document.Servers = new List<OpenApiServer>
-        {
-            new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
-        };
-            return Task.CompletedTask;
-        });
-    }
-});
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -91,6 +75,21 @@ builder.Services.AddIdentityCore<ApplicationUser>()
     .AddEntityFrameworkStores<AcademicDbContext>()
     .AddApiEndpoints();
 
+builder.Services.AddOpenApi(options =>
+{
+    if (builder.Environment.IsProduction())
+    {
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            document.Servers = new List<OpenApiServer>
+            {
+                new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
+            };
+            return Task.CompletedTask;
+        });
+    }
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsProduction())
@@ -125,14 +124,13 @@ app.UseAuthorization();
 app.MapPost("/api/login", async (
     [Microsoft.AspNetCore.Mvc.FromBody] AcademicSystem.Web.DTOs.LoginRequest request,
     UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager,
     IConfiguration configuration) =>
 {
     var user = await userManager.FindByEmailAsync(request.Email);
     if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
         return Results.Unauthorized();
 
-    var jwtSettings = builder.Configuration.GetSection("Jwt");
+    var jwtSettings = configuration.GetSection("Jwt");
     var keyBytes = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
 
     var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
@@ -164,7 +162,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AcademicDbContext>();
-
         if (context.Database.IsRelational())
         {
             context.Database.Migrate();
