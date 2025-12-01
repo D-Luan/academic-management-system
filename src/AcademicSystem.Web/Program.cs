@@ -4,17 +4,14 @@ using AcademicSystem.ApplicationCore.Services;
 using AcademicSystem.Infrastructure.Data;
 using AcademicSystem.Infrastructure.Data.Repositories;
 using AcademicSystem.Infrastructure.Services;
+using AcademicSystem.Web.Extensions;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using Serilog;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,79 +47,14 @@ else
         options.UseNpgsql(connectionString));
 }
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    var jwtSettings = builder.Configuration.GetSection("Jwt");
-    var keyBytes = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
-
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-        ValidateIssuer = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidateAudience = true,
-        ValidAudience = jwtSettings["Audience"]
-    };
-});
+builder.Services.AddCustomJwtAuthentication(builder.Configuration);
+builder.Services.AddInfrastructureDocumentation(builder.Configuration, builder.Environment);
 
 builder.Services.AddAuthorization();
 
 builder.Services.AddIdentityCore<ApplicationUser>()
     .AddEntityFrameworkStores<AcademicDbContext>()
     .AddApiEndpoints();
-
-builder.Services.AddOpenApi(options =>
-{
-    options.AddDocumentTransformer((document, context, cancellationToken) =>
-    {
-        if (builder.Environment.IsProduction())
-        {
-            document.Servers = new List<OpenApiServer>
-            {
-                new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
-            };
-        }
-
-        var securityScheme = new OpenApiSecurityScheme
-        {
-            Name = "Authorization",
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer",
-            BearerFormat = "JWT",
-            In = ParameterLocation.Header,
-            Description = "Enter your JWT token here"
-        };
-
-        document.Components ??= new OpenApiComponents();
-        document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
-        {
-            ["Bearer"] = securityScheme
-        };
-
-        document.SecurityRequirements = new List<OpenApiSecurityRequirement>
-        {
-            new()
-            {
-                [new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                }] = new List<string>()
-            }
-        };
-
-        return Task.CompletedTask;
-    });
-});
 
 var app = builder.Build();
 
