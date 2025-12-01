@@ -5,12 +5,15 @@ using AcademicSystem.Infrastructure.Data;
 using AcademicSystem.Infrastructure.Data.Repositories;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using Serilog;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,8 +64,32 @@ else
         options.UseNpgsql(connectionString));
 }
 
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
-    .AddEntityFrameworkStores<AcademicDbContext>();
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var keyBytes = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+        ValidateIssuer = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidateAudience = true,
+        ValidAudience = jwtSettings["Audience"]
+    };
+});
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddIdentityCore<ApplicationUser>()
+    .AddEntityFrameworkStores<AcademicDbContext>()
+    .AddApiEndpoints();
 
 var app = builder.Build();
 
@@ -95,7 +122,36 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapIdentityApi<ApplicationUser>();
+app.MapPost("/api/login", async (
+    [Microsoft.AspNetCore.Mvc.FromBody] AcademicSystem.Web.DTOs.LoginRequest request,
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager) =>
+{
+    var user = await userManager.FindByEmailAsync(request.Email);
+    if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
+        return Results.Unauthorized();
+
+    var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+    var tokenDescriptor = new SecurityTokenDescriptor
+    {
+        Subject = new System.Security.Claims.ClaimsIdentity(new[]
+        {
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id),
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, user.Email!)
+        }),
+        Expires = DateTime.UtcNow.AddHours(1),
+        Issuer = jwtSettings["Issuer"],
+        Audience = jwtSettings["Audience"],
+        SigningCredentials = new SigningCredentials(
+            new SymmetricSecurityKey(keyBytes),
+            SecurityAlgorithms.HmacSha256Signature)
+    };
+    var token = tokenHandler.CreateToken(tokenDescriptor);
+    var jwtString = tokenHandler.WriteToken(token);
+
+    return Results.Ok(new { accessToken = jwtString });
+});
+
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
