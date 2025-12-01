@@ -9,7 +9,7 @@ namespace AcademicSystem.Web.Controllers;
 
 [ApiController]
 [Route("api/courses")]
-[Authorize(AuthenticationSchemes = "Identity.Bearer")]
+[Authorize]
 public class CourseController : ControllerBase
 {
     private readonly ICourseService _courseService;
@@ -28,9 +28,9 @@ public class CourseController : ControllerBase
         var courseType = (CourseType)request.Type;
 
         var createdCourse = await _courseService.CreateCourseAsync(
-            request.Name,
-            courseType,
-            request.TotalHours
+        request.Name,
+        courseType,
+        request.TotalHours
         );
 
         return CreatedAtAction(

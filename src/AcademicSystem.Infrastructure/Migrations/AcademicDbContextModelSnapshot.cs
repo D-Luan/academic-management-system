@@ -36,7 +36,7 @@ namespace AcademicSystem.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Administrators");
+                    b.ToTable("Administrators", (string)null);
                 });
 
             modelBuilder.Entity("AcademicSystem.ApplicationCore.Entities.ApplicationUser", b =>
@@ -128,7 +128,7 @@ namespace AcademicSystem.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Courses");
+                    b.ToTable("Courses", (string)null);
                 });
 
             modelBuilder.Entity("AcademicSystem.ApplicationCore.Entities.Student", b =>
@@ -150,7 +150,7 @@ namespace AcademicSystem.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Students");
+                    b.ToTable("Students", (string)null);
                 });
 
             modelBuilder.Entity("AcademicSystem.ApplicationCore.Entities.Subject", b =>
@@ -176,7 +176,7 @@ namespace AcademicSystem.Infrastructure.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("Subjects");
+                    b.ToTable("Subjects", (string)null);
                 });
 
             modelBuilder.Entity("AcademicSystem.ApplicationCore.Entities.Teacher", b =>
@@ -194,26 +194,7 @@ namespace AcademicSystem.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Teachers");
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("FriendlyName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Xml")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DataProtectionKeys");
+                    b.ToTable("Teachers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -377,7 +358,7 @@ namespace AcademicSystem.Infrastructure.Migrations
 
                             b1.HasKey("StudentId");
 
-                            b1.ToTable("Students");
+                            b1.ToTable("Students", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("StudentId");
@@ -425,7 +406,7 @@ namespace AcademicSystem.Infrastructure.Migrations
 
                             b1.HasKey("TeacherId");
 
-                            b1.ToTable("Teachers");
+                            b1.ToTable("Teachers", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("TeacherId");

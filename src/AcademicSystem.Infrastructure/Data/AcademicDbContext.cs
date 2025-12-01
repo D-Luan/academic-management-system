@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace AcademicSystem.Infrastructure.Data;
 
-public class AcademicDbContext : IdentityDbContext<ApplicationUser>, IDataProtectionKeyContext
+public class AcademicDbContext : IdentityDbContext<ApplicationUser>
 {
     public AcademicDbContext(DbContextOptions<AcademicDbContext> options) 
         : base(options)
@@ -18,7 +18,6 @@ public class AcademicDbContext : IdentityDbContext<ApplicationUser>, IDataProtec
     public DbSet<Administrator> Administrators { get; set; }
     public DbSet<Course> Courses { get; set; }
     public DbSet<Subject> Subjects { get; set; }
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

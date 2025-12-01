@@ -5,15 +5,12 @@ using AcademicSystem.Infrastructure.Data;
 using AcademicSystem.Infrastructure.Data.Repositories;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using Serilog;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,39 +21,17 @@ builder.Services.AddControllers();
 
 builder.Services.AddOpenApi(options =>
 {
-    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    if (builder.Environment.IsProduction())
     {
-        if (builder.Environment.IsProduction())
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
         {
             document.Servers = new List<OpenApiServer>
-            {
-                new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
-            };
-        }
-
-        var securityScheme = new OpenApiSecurityScheme
         {
-            Name = "Authorization",
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer",
-            BearerFormat = "JWT",
-            In = ParameterLocation.Header,
-            Description = "Paste your JWT token here."
+            new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
         };
-
-        document.Components ??= new OpenApiComponents();
-        document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
-        {
-            ["Bearer"] = securityScheme
-        };
-
-        document.SecurityRequirements = new List<OpenApiSecurityRequirement>
-        {
-            new() { [securityScheme] = new List<string>() }
-        };
-
-        return Task.CompletedTask;
-    });
+            return Task.CompletedTask;
+        });
+    }
 });
 
 builder.Services.AddCors(options =>
@@ -86,38 +61,19 @@ else
         options.UseNpgsql(connectionString));
 }
 
-builder.Services.AddDataProtection()
-    .PersistKeysToDbContext<AcademicDbContext>()
-    .SetApplicationName("AcademicSystem");
-
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<AcademicDbContext>();
 
-builder.Services.Configure<JwtBearerOptions>("Identity.Bearer", options =>
-{
-    options.IncludeErrorDetails = true;
-
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-
-        ValidateIssuer = false,
-
-        ValidateAudience = false,
-
-        ValidateLifetime = true,
-
-        ClockSkew = TimeSpan.Zero
-    };
-});
-
 var app = builder.Build();
 
-app.Use((context, next) =>
+if (app.Environment.IsProduction())
 {
-    context.Request.Scheme = "https";
-    return next();
-});
+    app.Use((context, next) =>
+    {
+        context.Request.Scheme = "https";
+        return next();
+    });
+}
 
 var forwardedOptions = new ForwardedHeadersOptions
 {
@@ -148,6 +104,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AcademicDbContext>();
+
         if (context.Database.IsRelational())
         {
             context.Database.Migrate();
