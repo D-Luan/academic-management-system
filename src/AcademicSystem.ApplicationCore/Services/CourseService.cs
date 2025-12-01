@@ -1,5 +1,6 @@
 ﻿using AcademicSystem.ApplicationCore.Entities;
 using AcademicSystem.ApplicationCore.Enums;
+using AcademicSystem.ApplicationCore.Exceptions;
 using AcademicSystem.ApplicationCore.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -27,5 +28,27 @@ public class CourseService : ICourseService
         _logger.LogInformation($"Course {course.Id} created successfully.");
 
         return course;
+    }
+
+    public async Task<Subject> AddSubjectAsync(int courseId, string name, int workload)
+    {
+        _logger.LogInformation($"Adding subject '{name}' to Course ID {courseId}");
+
+        var course = await _courseRepository.GetByIdAsync(courseId);
+
+        if (course == null)
+        {
+            throw new DomainException($"Course with ID {courseId} not found.");
+        }
+
+        var subject = new Subject(name, courseId, workload);
+
+        course.AddSubject(subject);
+
+        await _courseRepository.UpdateAsync(course);
+
+        _logger.LogInformation("Subject added successfully.");
+
+        return subject;
     }
 }
