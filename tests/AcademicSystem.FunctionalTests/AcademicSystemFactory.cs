@@ -16,7 +16,10 @@ public class AcademicSystemFactory<TProgram> : WebApplicationFactory<TProgram> w
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                {"ConnectionStrings:DefaultConnection", "InMemory"}
+                {"ConnectionStrings:DefaultConnection", "InMemory"},
+                {"Jwt:Key", "FalseKeyForIntegrationTests1234!"},
+                {"Jwt:Issuer", "AcademicApiTest"},
+                {"Jwt:Audience", "AcademicClientTest"}
             });
         });
 
