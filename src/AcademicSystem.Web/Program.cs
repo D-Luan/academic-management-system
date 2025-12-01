@@ -3,6 +3,7 @@ using AcademicSystem.ApplicationCore.Interfaces;
 using AcademicSystem.ApplicationCore.Services;
 using AcademicSystem.Infrastructure.Data;
 using AcademicSystem.Infrastructure.Data.Repositories;
+using AcademicSystem.Infrastructure.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -30,6 +31,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<ITokenService, JwtTokenService>();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -77,17 +79,49 @@ builder.Services.AddIdentityCore<ApplicationUser>()
 
 builder.Services.AddOpenApi(options =>
 {
-    if (builder.Environment.IsProduction())
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
-        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        if (builder.Environment.IsProduction())
         {
             document.Servers = new List<OpenApiServer>
             {
                 new() { Url = "https://academicsys-api-luan-h2g6gagwa4fpfgd6.centralus-01.azurewebsites.net" }
             };
-            return Task.CompletedTask;
-        });
-    }
+        }
+
+        var securityScheme = new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Enter your JWT token here"
+        };
+
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes = new Dictionary<string, OpenApiSecurityScheme>
+        {
+            ["Bearer"] = securityScheme
+        };
+
+        document.SecurityRequirements = new List<OpenApiSecurityRequirement>
+        {
+            new()
+            {
+                [new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                }] = new List<string>()
+            }
+        };
+
+        return Task.CompletedTask;
+    });
 });
 
 var app = builder.Build();
@@ -120,39 +154,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapPost("/api/login", async (
-    [Microsoft.AspNetCore.Mvc.FromBody] AcademicSystem.Web.DTOs.LoginRequest request,
-    UserManager<ApplicationUser> userManager,
-    IConfiguration configuration) =>
-{
-    var user = await userManager.FindByEmailAsync(request.Email);
-    if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
-        return Results.Unauthorized();
-
-    var jwtSettings = configuration.GetSection("Jwt");
-    var keyBytes = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
-
-    var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-    var tokenDescriptor = new SecurityTokenDescriptor
-    {
-        Subject = new System.Security.Claims.ClaimsIdentity(new[]
-        {
-            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id),
-            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, user.Email!)
-        }),
-        Expires = DateTime.UtcNow.AddHours(1),
-        Issuer = jwtSettings["Issuer"],
-        Audience = jwtSettings["Audience"],
-        SigningCredentials = new SigningCredentials(
-            new SymmetricSecurityKey(keyBytes),
-            SecurityAlgorithms.HmacSha256Signature)
-    };
-    var token = tokenHandler.CreateToken(tokenDescriptor);
-    var jwtString = tokenHandler.WriteToken(token);
-
-    return Results.Ok(new { accessToken = jwtString });
-});
 
 app.MapControllers();
 
